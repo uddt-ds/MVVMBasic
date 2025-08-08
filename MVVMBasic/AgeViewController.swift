@@ -7,21 +7,21 @@
 
 import UIKit
 
-class AgeViewController: UIViewController {
-    let textField: UITextField = {
+final class AgeViewController: UIViewController {
+    private let textField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "나이를 입력해주세요"
         textField.borderStyle = .roundedRect
         return textField
     }()
-    let resultButton: UIButton = {
+    private lazy var resultButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .systemBlue
         button.setTitle( "클릭", for: .normal)
-        button.layer.cornerRadius = 8
+        setupCornerRadius(button)
         return button
     }()
-    let label: UILabel = {
+    private let label: UILabel = {
         let label = UILabel()
         label.text = "여기에 결과를 보여주세요"
         label.textAlignment = .center
@@ -36,13 +36,13 @@ class AgeViewController: UIViewController {
         resultButton.addTarget(self, action: #selector(resultButtonTapped), for: .touchUpInside)
     }
     
-    func configureHierarchy() {
+    private func configureHierarchy() {
         view.addSubview(textField)
         view.addSubview(resultButton)
         view.addSubview(label)
     }
     
-    func configureLayout() {
+    private func configureLayout() {
         textField.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
             make.horizontalEdges.equalToSuperview().inset(20)
@@ -67,7 +67,54 @@ class AgeViewController: UIViewController {
         view.endEditing(true)
     }
     
-    @objc func resultButtonTapped() {
+    @objc private func resultButtonTapped() {
         view.endEditing(true)
+
+        guard let text = textField.text else { return }
+        do {
+            let result = try checkValidateInput(input: text)
+            label.text = "당신은 \(result)살 입니다"
+        } catch .failConversionToValue {
+            label.text = BaseValidateError.failConversionToValue.rawValue
+        } catch .invalidInput {
+            label.text = BaseValidateError.invalidInput.rawValue
+        } catch {
+            label.text = BaseValidateError.outOfRangeValue.rawValue
+        }
     }
 }
+
+extension AgeViewController {
+    func checkValidateInput<T: StringProtocol>(input: T) throws(BaseValidateError) -> Int {
+
+        let minNum = RangeData.age.rangeNum.min
+        let maxNum = RangeData.age.rangeNum.max
+
+        // input이 공백을 포함하고 있는지
+        if input.contains(where: { $0.isWhitespace }) {
+            throw .invalidInput
+        }
+
+        // Input이 Int로 변환이 가능한지
+        guard let intInput = Int(input) else {
+            throw .failConversionToValue
+        }
+
+        // 유효한 범위인지
+        guard minNum < intInput && maxNum > intInput else {
+            throw .outOfRangeValue
+        }
+
+        return intInput
+    }
+}
+
+// Numeric으로 해도 Int로 바꿀 수가 없음 ㅠㅠ
+//extension AgeViewController {
+//    @discardableResult
+//    private func checkValidateInput<T: Numeric>(input: T) throws -> Bool {
+//        if let userInput: Int = Int(input) {
+//
+//        }
+//    }
+//}
