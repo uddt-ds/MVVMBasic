@@ -1,94 +1,48 @@
 //
-//  BMIViewController.swift
+//  BMIViewModel.swift
 //  MVVMBasic
 //
-//  Created by Finn on 8/7/25.
+//  Created by Lee on 8/8/25.
 //
 
-import UIKit
+import Foundation
 
-class BMIViewController: UIViewController {
-    let heightTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "키를 입력해주세요"
-        textField.borderStyle = .roundedRect
-        return textField
-    }()
-    let weightTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "몸무게를 입력해주세요"
-        textField.borderStyle = .roundedRect
-        return textField
-    }()
-    lazy var resultButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .systemBlue
-        button.setTitle("클릭", for: .normal)
-        setupCornerRadius(button)
-        return button
-    }()
-    let resultLabel: UILabel = {
-        let label = UILabel()
-        label.text = "여기에 결과를 보여주세요"
-        label.textAlignment = .center
-        return label
-    }()
+class BMIViewModel {
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        configureHierarchy()
-        configureLayout()
-
-        resultButton.addTarget(self, action: #selector(resultButtonTapped), for: .touchUpInside)
-    }
-
-    func configureHierarchy() {
-        view.addSubview(heightTextField)
-        view.addSubview(weightTextField)
-        view.addSubview(resultButton)
-        view.addSubview(resultLabel)
-    }
-
-    func configureLayout() {
-        heightTextField.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide).offset(20)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(44)
-        }
-
-        weightTextField.snp.makeConstraints { make in
-            make.top.equalTo(heightTextField.snp.bottom).offset(20)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(44)
-        }
-
-        resultButton.snp.makeConstraints { make in
-            make.top.equalTo(weightTextField.snp.bottom).offset(20)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(44)
-        }
-
-        resultLabel.snp.makeConstraints { make in
-            make.top.equalTo(resultButton.snp.bottom).offset(20)
-            make.horizontalEdges.equalToSuperview().inset(20)
-            make.height.equalTo(44)
+    var inputHeight: String? {
+        didSet {
+            print("---inputHeight---")
+            print("텍스트 변경됨")
+            validate()
         }
     }
 
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        view.endEditing(true)
+    var inputWeight: String? {
+        didSet {
+            print("---inputWeight---")
+            print("텍스트 변경됨")
+            validate()
+        }
     }
 
-    @objc func resultButtonTapped() {
-        view.endEditing(true)
+    var outputText: String? {
+        didSet {
+            print("---outputText---")
+            print("전달될 텍스트 변경됨")
+            closureText?()
+        }
+    }
 
-        let height = heightTextField.text
-        let weight = weightTextField.text
+    var closureText: (() -> Void)?
+
+    func validate() {
+        let height = inputHeight
+        let weight = inputWeight
 
         do {
             try inputChecker(height: height, weight: weight)
         } catch {
-            resultLabel.text = BaseValidateError.invalidInput.rawValue
+            outputText = BaseValidateError.invalidInput.rawValue
             return
         }
 
@@ -106,24 +60,21 @@ class BMIViewController: UIViewController {
                 default: return
                 }
 
-                resultLabel.text = "BMI 지수는 \(resultString), \(condition)입니다"
+                outputText = "BMI 지수는 \(resultString), \(condition)입니다"
             } catch BaseValidateError.failConversionToValue {
-                resultLabel.text = BaseValidateError.failConversionToValue.rawValue
+                outputText = BaseValidateError.failConversionToValue.rawValue
             } catch BaseValidateError.invalidInput {
-                resultLabel.text = BaseValidateError.invalidInput.rawValue
+                outputText = BaseValidateError.invalidInput.rawValue
             } catch BaseValidateError.outOfRangeValue {
-                resultLabel.text = BaseValidateError.outOfRangeValue.rawValue
+                outputText = BaseValidateError.outOfRangeValue.rawValue
             } catch BMIError.weightWrongInput {
-                resultLabel.text = BMIError.weightWrongInput.rawValue
+                outputText = BMIError.weightWrongInput.rawValue
             } catch {
                 print("Unknown Error")
                 return
             }
         }
     }
-}
-
-extension BMIViewController {
 
     // 입력 자체가 유효한 입력인지
     private func inputChecker<T: StringProtocol>(height: T?, weight: T?) throws {
@@ -183,5 +134,4 @@ extension BMIViewController {
         let multipleHeight = (height * 0.01) * (height * 0.01)
         return weight / multipleHeight
     }
-
 }
