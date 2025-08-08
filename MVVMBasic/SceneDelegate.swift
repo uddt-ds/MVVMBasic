@@ -26,8 +26,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         birthDayVC.tabBarItem = UITabBarItem(title: "생년월일", image: UIImage(systemName: "calendar"), tag: 2)
         let currencyVC = CurrencyViewController()
         currencyVC.tabBarItem = UITabBarItem(title: "환율", image: UIImage(systemName: "wonsign.bank.building"), tag: 3)
+        let wordCounterVC = WordCounterViewController()
+        wordCounterVC.tabBarItem = UITabBarItem(title: "글자수", image: UIImage(systemName: "envelope.front"), tag: 4)
 
-        tabBarController.viewControllers = [ageVC, bmiVC, birthDayVC, currencyVC]
+        tabBarController.viewControllers = [ageVC, bmiVC, birthDayVC, currencyVC, wordCounterVC]
         tabBarController.tabBar.tintColor = .systemBlue
         tabBarController.tabBar.unselectedItemTintColor = .systemGray
         
