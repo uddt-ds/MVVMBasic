@@ -189,25 +189,28 @@ extension MBTIViewController: UICollectionViewDataSource, UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MBTICell.identifier, for: indexPath) as? MBTICell else { return .init() }
         cell.configureButton(title: buttonTitleArr[indexPath.item].rawValue, tag: indexPath.item)
-        // 버튼을 눌렀을 때 동작:
-        // 버튼을 누르면 배열에 추가함
-        // 배열에 추가할 때 조건 :
-        // 개수가 4개면 완료
-        // E버튼이 있을 때 I를 누르면 E는 취소하고 I는 선택해야 함
-        // E가 선택되었을 때 E를 누르면 E가 취소됨
-
-        // E버튼 동작, 1. E버튼이 눌리면 E 데이터를 추가 / 제거
-        //           2. I버튼이 눌리면 E 버튼 제거
         cell.buttonTapClosure = { btn in
             btn.isSelected.toggle()
-            if !self.selectedArr.contains(btn.tag) {
-                self.selectedArr.append(btn.tag)
-                print(self.selectedArr)
-            } else {
-
-            }
+            let selectedIndex = self.checkOutgoingCharacter(btn.tag)
+            print(selectedIndex)
+            print(self.selectedArr)
         }
         return cell
+    }
+
+    private func checkOutgoingCharacter(_ sender: Int) -> Int {
+        if selectedArr.count == 0 {
+            selectedArr.append(sender)
+            return sender
+        } else if selectedArr.count == 1 {
+            if selectedArr[0] == sender {
+                selectedArr.removeAll()
+            } else {
+                selectedArr.removeAll()
+                selectedArr.append(sender)
+            }
+        }
+        return sender
     }
 }
 
