@@ -52,9 +52,10 @@ final class MBTICell: UICollectionViewCell, ReusableViewProtocol {
         contentView.backgroundColor = .clear
     }
 
-    func configureButton(title: String) {
+    func configureButton(title: String, tag: Int) {
         button.setTitle(title, for: .normal)
 
+        button.tag = tag
         DispatchQueue.main.async {
             self.button.layer.cornerRadius = self.button.bounds.width / 2
         }
@@ -62,6 +63,7 @@ final class MBTICell: UICollectionViewCell, ReusableViewProtocol {
 
     @objc private func buttonTapped(_ sender: UIButton) {
         buttonTapClosure?(sender)
+        print(button.tag)
         if button.isSelected {
             button.backgroundColor = .main
         } else {

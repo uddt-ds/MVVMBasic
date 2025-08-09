@@ -168,8 +168,7 @@ extension MBTIViewController: UICollectionViewDataSource, UICollectionViewDelega
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MBTICell.identifier, for: indexPath) as? MBTICell else { return .init() }
-        cell.configureButton(title: buttonTitleArr[indexPath.item].rawValue)
-        print(indexPath.row, buttonTitleArr[indexPath.row])
+        cell.configureButton(title: buttonTitleArr[indexPath.item].rawValue, tag: indexPath.item)
         cell.buttonTapClosure = { btn in
             btn.isSelected.toggle()
         }
