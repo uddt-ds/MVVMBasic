@@ -12,9 +12,13 @@ class AgeViewModel {
     var inputText: String? {
         didSet {
             print("input 값이 변경되었습니다")
-            // 애초에 Input Text는 viewModel에서 검증할때만 쓰는건데
-            // 여기서 에러를 상위로 던지면, VC에서 캐치할 수가 있나?
-            checkValidate()
+            do {
+              try  checkValidate()
+            } catch .invalidInput {
+                closureError?(BaseValidateError.invalidInput)
+            } catch {
+                print("unknown Error")
+            }
         }
     }
 
@@ -27,18 +31,23 @@ class AgeViewModel {
 
     var closureText: (() -> Void)?
 
+    var closureError: ((BaseValidateError) -> Void)?
+
 
     //VC에서 값 전달한 다음에 VC에서 VM의 메서드를 사용할 수 있지 않을까
-    func checkValidate() {
+    func checkValidate() throws(BaseValidateError) {
         guard let text = inputText else { return }
         do {
             let result = try checkValidateInput(input: text)
             outputText = "당신은 \(result)살입니다"
         } catch .failConversionToValue {
-            outputText = BaseValidateError.failConversionToValue.rawValue
+            print("fail 캐치")
+            outputText =  BaseValidateError.failConversionToValue.rawValue
         } catch .invalidInput {
-            outputText = BaseValidateError.invalidInput.rawValue
+            print("invalid 캐치")
+            throw BaseValidateError.invalidInput
         } catch {
+            print("outOfRange 캐치")
             outputText = BaseValidateError.outOfRangeValue.rawValue
         }
     }
@@ -49,7 +58,7 @@ class AgeViewModel {
         let maxNum = RangeData.age.rangeNum.max
 
         // input이 공백을 포함하고 있는지
-        if input.contains(where: { $0.isWhitespace }) {
+        if input.contains(where: { $0.isWhitespace }) || input.count == 0 {
             throw .invalidInput
         }
 

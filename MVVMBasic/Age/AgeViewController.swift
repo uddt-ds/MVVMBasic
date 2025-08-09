@@ -42,6 +42,12 @@ final class AgeViewController: UIViewController {
         viewModel.closureText = {
             self.label.text = self.viewModel.outputText
         }
+
+        viewModel.closureError = { error in
+            DispatchQueue.main.async {
+                self.showAlert(title: "경고", message: error.rawValue)
+            }
+        }
     }
 
     private func configureHierarchy() {
