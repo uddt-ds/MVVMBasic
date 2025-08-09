@@ -10,12 +10,18 @@ import SnapKit
 
 final class MBTIViewController: UIViewController {
 
-    private let imageView: UIImageView = {
+    let imageManager = ImageManager.shared
+
+    private lazy var imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 70
         imageView.layer.borderColor = UIColor.main.cgColor
         imageView.layer.borderWidth = 5
+        imageView.isUserInteractionEnabled = true
+        imageView.clipsToBounds = true
+        let imageName = self.imageManager.imageNames[Int.random(in: 1...12)]
+        imageView.image = UIImage(named: imageName)
         return imageView
     }()
 
@@ -87,6 +93,7 @@ final class MBTIViewController: UIViewController {
         configureLayout()
         configureView()
         setupNav()
+        setupGesture()
 
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -161,6 +168,16 @@ final class MBTIViewController: UIViewController {
 
     private func setupNav() {
         navigationItem.title = "PROFILE SETTING"
+    }
+
+    private func setupGesture() {
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(imageViewTapped))
+        imageView.addGestureRecognizer(gesture)
+    }
+
+    @objc private func imageViewTapped(_ sender: UITapGestureRecognizer) {
+        let vc = ProfileViewController()
+        navigationController?.pushViewController(vc, animated: true)
     }
 }
 

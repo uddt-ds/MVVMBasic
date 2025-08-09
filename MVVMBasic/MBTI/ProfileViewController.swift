@@ -9,6 +9,8 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
 
+    let imageManager = ImageManager.shared
+
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -99,6 +101,7 @@ extension ProfileViewController: UICollectionViewDelegate, UICollectionViewDataS
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ProfileImageCell.identifier, for: indexPath) as? ProfileImageCell else { return .init() }
+        cell.configureCell(imageName: imageManager.imageNames[indexPath.item])
         return cell
     }
 }
