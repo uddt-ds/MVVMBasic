@@ -47,6 +47,12 @@ class BMIViewController: UIViewController {
         viewModel.closureText = {
             self.resultLabel.text = self.viewModel.outputText
         }
+
+        viewModel.closureBMIError = { error in
+            DispatchQueue.main.async {
+                self.showAlert(title: "경고", message: error.rawValue)
+            }
+        }
     }
 
     func configureHierarchy() {
@@ -92,5 +98,6 @@ class BMIViewController: UIViewController {
         viewModel.inputHeight = heightTextField.text
         viewModel.inputWeight = weightTextField.text
 
+        viewModel.buttonTapped = true
     }
 }

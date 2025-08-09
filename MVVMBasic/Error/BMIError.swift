@@ -8,5 +8,5 @@
 import Foundation
 
 enum BMIError: String, Error {
-    case weightWrongInput = "키보다 몸무게가 더 크게 입력되었습니다"
+    case weightWrongInput = "키보다 몸무게가 크거나 같게 입력되었습니다"
 }

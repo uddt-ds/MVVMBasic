@@ -13,7 +13,6 @@ class BMIViewModel {
         didSet {
             print("---inputHeight---")
             print("텍스트 변경됨")
-            validate()
         }
     }
 
@@ -21,7 +20,17 @@ class BMIViewModel {
         didSet {
             print("---inputWeight---")
             print("텍스트 변경됨")
-            validate()
+        }
+    }
+
+    var buttonTapped: Bool? {
+        didSet {
+            do {
+                self.buttonTapped = false
+                try validate()
+            } catch {
+                closureBMIError?(BMIError.weightWrongInput)
+            }
         }
     }
 
@@ -35,7 +44,9 @@ class BMIViewModel {
 
     var closureText: (() -> Void)?
 
-    func validate() {
+    var closureBMIError: ((BMIError) -> Void)?
+
+    func validate() throws {
         let height = inputHeight
         let weight = inputWeight
 
@@ -68,7 +79,7 @@ class BMIViewModel {
             } catch BaseValidateError.outOfRangeValue {
                 outputText = BaseValidateError.outOfRangeValue.rawValue
             } catch BMIError.weightWrongInput {
-                outputText = BMIError.weightWrongInput.rawValue
+                throw BMIError.weightWrongInput
             } catch {
                 print("Unknown Error")
                 return
@@ -89,11 +100,11 @@ class BMIViewModel {
         var isInRange: Bool = false
 
         if let heightInput = Double(height), let weightInput = Double(weight) {
-
             do {
                 let isRange = try checkRange(height: heightInput, weight: weightInput)
                 isInRange = isRange
             } catch .outOfRangeValue {
+                isInRange = false
                 throw BaseValidateError.outOfRangeValue
             }
 
@@ -104,8 +115,6 @@ class BMIViewModel {
 
                 let result = calculateBMINumber(height: heightInput, weight: weightInput)
                 return T(result)
-            } else {
-                throw BaseValidateError.outOfRangeValue
             }
         }
 
