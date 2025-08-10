@@ -63,7 +63,6 @@ final class MBTICell: UICollectionViewCell, ReusableViewProtocol {
 
     @objc private func buttonTapped(_ sender: UIButton) {
         buttonTapClosure?(sender)
-//        changeButtonColor(isSelected: sender.isSelected)
         print(button.tag)
     }
 

@@ -10,9 +10,7 @@ import SnapKit
 
 final class MBTIViewController: UIViewController {
 
-    private var selectedIndex: Int?
-
-    private var previousSelectedIndex: Int?
+    private var selectedIndexDictionary: [Int:Int] = [:]
 
     let imageManager = ImageManager.shared
 
@@ -193,54 +191,36 @@ extension MBTIViewController: UICollectionViewDataSource, UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MBTICell.identifier, for: indexPath) as? MBTICell else { return .init() }
         cell.configureButton(title: buttonTitleArr[indexPath.item].rawValue, tag: indexPath.item)
-        cell.changeButtonColor(isSelected: selectedIndex == indexPath.item)
 
         cell.buttonTapClosure = { btn in
             // 일단 어떤 버튼을 눌렀는지 가져와
             // 다른 버튼을 누르면 이전 버튼을 pre에 저장해
             // 다음 버튼은 새로 갱신돼
             let tappedIndex = btn.tag
-            if tappedIndex == self.selectedIndex {
-                self.selectedIndex = nil
-                collectionView.reloadItems(at: [IndexPath(row: tappedIndex, section: 0)])
+            let groupKey = self.buttonTitleArr[tappedIndex].groupKey
+            let selectedIndex = self.selectedIndexDictionary[groupKey]
+            if selectedIndex == nil {
+                self.selectedIndexDictionary[groupKey] = tappedIndex
+                self.collectionView.reloadItems(at: [IndexPath(item: tappedIndex, section: 0)])
+            } else if selectedIndex == tappedIndex {
+                self.selectedIndexDictionary[groupKey] = nil
+                self.collectionView.reloadItems(at: [IndexPath(item: tappedIndex, section: 0)])
             } else {
-                let previousIndex = self.selectedIndex
-                self.selectedIndex = tappedIndex
-                if let previousBtn = previousIndex {
-                    collectionView.reloadItems(at: [IndexPath(row: previousBtn, section: 0)])
+                if let selectedIndex {
+                    let reloadIndexes = [
+                        IndexPath(item: selectedIndex, section: 0),
+                        IndexPath(item: tappedIndex, section: 0)
+                    ]
+                    self.selectedIndexDictionary[groupKey] = tappedIndex
+                    self.collectionView.reloadItems(at: reloadIndexes)
                 }
-                collectionView.reloadItems(at: [IndexPath(row: tappedIndex, section: 0)])
-            }
-            self.selectedIndex = self.checkOutgoingCharacter(btn.tag)
-
-            if let preIndex = self.previousSelectedIndex {
-                collectionView.reloadItems(at: [IndexPath(row: preIndex, section: 0)])
             }
         }
 
-
+        let groupKey = self.buttonTitleArr[indexPath.item].groupKey
+        cell.changeButtonColor(isSelected: selectedIndexDictionary[groupKey] == indexPath.item)
 
         return cell
-    }
-
-    // 여기서 선택된 숫자가 나옴
-    private func checkOutgoingCharacter(_ sender: Int) -> Int {
-        if selectedIndex == nil {
-            selectedIndex = sender
-//            selectedArr.append(sender)
-            return sender
-        } else if selectedIndex != nil {
-            if selectedIndex == sender {
-                selectedIndex = nil
-            } else {
-                previousSelectedIndex = selectedIndex
-                selectedIndex = sender
-            }
-        }
-
-        print("selIndex", selectedIndex)
-        print("preIndex", previousSelectedIndex)
-        return sender
     }
 }
 
@@ -261,5 +241,14 @@ enum ButtonTitle: String, CaseIterable {
     var horizontalArray: [ButtonTitle] {
         // TODO: 시간되면 로직 풀어보기. 0, 4, 1, 5, 2, 6, 3, 7 순으로 데이터가 있어야 함
         return [ButtonTitle.e, ButtonTitle.i, ButtonTitle.s, ButtonTitle.n, ButtonTitle.t, ButtonTitle.f, ButtonTitle.j, ButtonTitle.p]
+    }
+
+    var groupKey: Int {
+        switch self {
+        case .e, .i: return 0
+        case .n, .s: return 1
+        case .t, .f: return 2
+        case .j, .p: return 3
+        }
     }
 }
