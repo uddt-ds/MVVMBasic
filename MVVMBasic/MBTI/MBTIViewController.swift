@@ -197,7 +197,14 @@ final class MBTIViewController: UIViewController {
     }
 
     @objc private func completeButtonTapped(_ sender: UIButton) {
-        print(#function)
+        let keys = selectedIndexDictionary.keys.sorted()
+        var mbtiResult: [String] = []
+        for key in keys {
+            if let value = selectedIndexDictionary[key] {
+                mbtiResult.append(buttonTitleArr[value].rawValue)
+            }
+        }
+        print("당신의 MBTI는 \(mbtiResult.joined())입니다.")
     }
 
     @objc private func imageViewTapped(_ sender: UITapGestureRecognizer) {
