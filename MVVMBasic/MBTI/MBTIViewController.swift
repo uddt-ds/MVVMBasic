@@ -10,6 +10,10 @@ import SnapKit
 
 final class MBTIViewController: UIViewController {
 
+    private var selectedIndex: Int?
+
+    private var previousSelectedIndex: Int?
+
     let imageManager = ImageManager.shared
 
     private lazy var imageView: UIImageView = {
@@ -20,7 +24,7 @@ final class MBTIViewController: UIViewController {
         imageView.layer.borderWidth = 5
         imageView.isUserInteractionEnabled = true
         imageView.clipsToBounds = true
-        let imageName = self.imageManager.imageNames[Int.random(in: 1...12)]
+        let imageName = self.imageManager.imageNames[Int.random(in: 0...11)]
         imageView.image = UIImage(named: imageName)
         return imageView
     }()
@@ -85,7 +89,7 @@ final class MBTIViewController: UIViewController {
 
     private let buttonTitleArr = ButtonTitle.e.horizontalArray
 
-    private var selectedArr: [Int] = []
+//    private var selectedArr: [Int] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -189,27 +193,53 @@ extension MBTIViewController: UICollectionViewDataSource, UICollectionViewDelega
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MBTICell.identifier, for: indexPath) as? MBTICell else { return .init() }
         cell.configureButton(title: buttonTitleArr[indexPath.item].rawValue, tag: indexPath.item)
+        cell.changeButtonColor(isSelected: selectedIndex == indexPath.item)
+
         cell.buttonTapClosure = { btn in
-            btn.isSelected.toggle()
-            let selectedIndex = self.checkOutgoingCharacter(btn.tag)
-            print(selectedIndex)
-            print(self.selectedArr)
+            // 일단 어떤 버튼을 눌렀는지 가져와
+            // 다른 버튼을 누르면 이전 버튼을 pre에 저장해
+            // 다음 버튼은 새로 갱신돼
+            let tappedIndex = btn.tag
+            if tappedIndex == self.selectedIndex {
+                self.selectedIndex = nil
+                collectionView.reloadItems(at: [IndexPath(row: tappedIndex, section: 0)])
+            } else {
+                let previousIndex = self.selectedIndex
+                self.selectedIndex = tappedIndex
+                if let previousBtn = previousIndex {
+                    collectionView.reloadItems(at: [IndexPath(row: previousBtn, section: 0)])
+                }
+                collectionView.reloadItems(at: [IndexPath(row: tappedIndex, section: 0)])
+            }
+            self.selectedIndex = self.checkOutgoingCharacter(btn.tag)
+
+            if let preIndex = self.previousSelectedIndex {
+                collectionView.reloadItems(at: [IndexPath(row: preIndex, section: 0)])
+            }
         }
+
+
+
         return cell
     }
 
+    // 여기서 선택된 숫자가 나옴
     private func checkOutgoingCharacter(_ sender: Int) -> Int {
-        if selectedArr.count == 0 {
-            selectedArr.append(sender)
+        if selectedIndex == nil {
+            selectedIndex = sender
+//            selectedArr.append(sender)
             return sender
-        } else if selectedArr.count == 1 {
-            if selectedArr[0] == sender {
-                selectedArr.removeAll()
+        } else if selectedIndex != nil {
+            if selectedIndex == sender {
+                selectedIndex = nil
             } else {
-                selectedArr.removeAll()
-                selectedArr.append(sender)
+                previousSelectedIndex = selectedIndex
+                selectedIndex = sender
             }
         }
+
+        print("selIndex", selectedIndex)
+        print("preIndex", previousSelectedIndex)
         return sender
     }
 }
