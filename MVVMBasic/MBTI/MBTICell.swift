@@ -18,8 +18,6 @@ final class MBTICell: UICollectionViewCell, ReusableViewProtocol {
         button.layer.borderColor = UIColor.lightGray.cgColor
         button.layer.borderWidth = 1
         button.backgroundColor = .white
-        button.setTitleColor(.lightGray, for: .normal)
-        button.setTitleColor(.white, for: .selected)
         button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
         return button
     }()
@@ -71,8 +69,10 @@ final class MBTICell: UICollectionViewCell, ReusableViewProtocol {
 
         if button.isSelected {
             button.backgroundColor = .main
+            button.setTitleColor(.white, for: .selected)
         } else {
             button.backgroundColor = .white
+            button.setTitleColor(.lightGray, for: .normal)
         }
     }
 }

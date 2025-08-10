@@ -77,9 +77,9 @@ final class MBTIViewController: UIViewController {
         button.setTitle("완료", for: .normal)
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .boldSystemFont(ofSize: 16)
-        button.backgroundColor = .main
+        button.backgroundColor = .darkGray
         button.layer.cornerRadius = 20
-        button.isEnabled = true
+        button.isEnabled = false
         return button
     }()
 
@@ -96,6 +96,7 @@ final class MBTIViewController: UIViewController {
         configureView()
         setupNav()
         setupGesture()
+        addButtonTarget()
 
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -168,6 +169,15 @@ final class MBTIViewController: UIViewController {
         view.backgroundColor = .white
     }
 
+    private func addButtonTarget() {
+        completeButon.addTarget(self, action: #selector(completeButtonTapped), for: .touchUpInside)
+    }
+
+    private func updateButton() {
+        completeButon.backgroundColor = completeButon.isEnabled ? .main : .darkGray
+    }
+
+
     private func setupNav() {
         navigationItem.title = "PROFILE SETTING"
     }
@@ -175,6 +185,19 @@ final class MBTIViewController: UIViewController {
     private func setupGesture() {
         let gesture = UITapGestureRecognizer(target: self, action: #selector(imageViewTapped))
         imageView.addGestureRecognizer(gesture)
+    }
+
+    private func checkButtonState() {
+        if selectedIndexDictionary.count == 4 {
+            completeButon.isEnabled = true
+        } else {
+            completeButon.isEnabled = false
+        }
+        updateButton()
+    }
+
+    @objc private func completeButtonTapped(_ sender: UIButton) {
+        print(#function)
     }
 
     @objc private func imageViewTapped(_ sender: UITapGestureRecognizer) {
@@ -193,9 +216,6 @@ extension MBTIViewController: UICollectionViewDataSource, UICollectionViewDelega
         cell.configureButton(title: buttonTitleArr[indexPath.item].rawValue, tag: indexPath.item)
 
         cell.buttonTapClosure = { btn in
-            // 일단 어떤 버튼을 눌렀는지 가져와
-            // 다른 버튼을 누르면 이전 버튼을 pre에 저장해
-            // 다음 버튼은 새로 갱신돼
             let tappedIndex = btn.tag
             let groupKey = self.buttonTitleArr[tappedIndex].groupKey
             let selectedIndex = self.selectedIndexDictionary[groupKey]
@@ -219,6 +239,8 @@ extension MBTIViewController: UICollectionViewDataSource, UICollectionViewDelega
 
         let groupKey = self.buttonTitleArr[indexPath.item].groupKey
         cell.changeButtonColor(isSelected: selectedIndexDictionary[groupKey] == indexPath.item)
+
+        checkButtonState()
 
         return cell
     }
