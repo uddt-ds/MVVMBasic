@@ -41,11 +41,16 @@ extension UIViewController {
             tabBarController.viewControllers = [ageVC, bmiVC, birthDayVC, currencyVC, wordCounterVC]
             tabBarController.tabBar.tintColor = .systemBlue
             tabBarController.tabBar.unselectedItemTintColor = .systemGray
+
+            //TODO: rootView 바꾸는 코드 점검 필요
             view.window?.rootViewController = tabBarController
+            view.window?.makeKeyAndVisible()
+
         case .option:
             let onBoardingVC = OnboardingVC()
             let nav = UINavigationController(rootViewController: onBoardingVC)
             view.window?.rootViewController = nav
+            view.window?.makeKeyAndVisible()
         }
     }
 }

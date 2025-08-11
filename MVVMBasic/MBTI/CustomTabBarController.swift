@@ -27,6 +27,7 @@ final class CustomTabBarController: UITabBarController {
 
     private func setupNav() {
         navigationItem.title = "PROFILE SETTING"
+        navigationItem.backButtonTitle = ""
     }
 }
 
