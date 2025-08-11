@@ -105,19 +105,29 @@ class MapViewController: UIViewController {
             message: "원하는 옵션을 선택하세요",
             preferredStyle: .actionSheet
         )
-        
-        let alert1Action = UIAlertAction(title: "얼럿 1", style: .default) { _ in
-            print("얼럿 1이 선택되었습니다.")
+
+        let map = self.mapView
+
+        let alert1Action = UIAlertAction(title: Category.total.rawValue, style: .default) { _ in
+            map.removeAnnotations(map.annotations)
+            self.viewModel.alertTapped.value = Category.total
         }
         
-        let alert2Action = UIAlertAction(title: "얼럿 2", style: .default) { _ in
-            print("얼럿 2가 선택되었습니다.")
+        let alert2Action = UIAlertAction(title: Category.korean.rawValue, style: .default) { _ in
+            map.removeAnnotations(map.annotations)
+            self.viewModel.alertTapped.value = Category.korean
         }
         
-        let alert3Action = UIAlertAction(title: "얼럿 3", style: .default) { _ in
-            print("얼럿 3이 선택되었습니다.")
+        let alert3Action = UIAlertAction(title: Category.overseas.rawValue, style: .default) { _ in
+            map.removeAnnotations(map.annotations)
+            self.viewModel.alertTapped.value = Category.overseas
         }
-        
+
+        let alert4Action = UIAlertAction(title: Category.chinese.rawValue, style: .default) { _ in
+            map.removeAnnotations(map.annotations)
+            self.viewModel.alertTapped.value = Category.chinese
+        }
+
         let cancelAction = UIAlertAction(title: "취소", style: .cancel) { _ in
             print("취소가 선택되었습니다.")
         }
@@ -125,6 +135,7 @@ class MapViewController: UIViewController {
         alertController.addAction(alert1Action)
         alertController.addAction(alert2Action)
         alertController.addAction(alert3Action)
+        alertController.addAction(alert4Action)
         alertController.addAction(cancelAction)
          
         present(alertController, animated: true, completion: nil)

@@ -11,10 +11,16 @@ class MapViewModel {
 
     var segmentTapped = Observable(value: Category.total)
 
+    var alertTapped = Observable(value: Category.total)
+
     var outputData = Observable<[Restaurant]>(value: [])
 
     init() {
         segmentTapped.bind { category in
+            self.outputData.value = self.getFilteredData(category)
+        }
+
+        alertTapped.bind { category in
             self.outputData.value = self.getFilteredData(category)
         }
     }
