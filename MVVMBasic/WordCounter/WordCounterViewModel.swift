@@ -9,23 +9,32 @@ import Foundation
 
 class WordCounterViewModel {
 
-    var inputText: String? {
-        didSet {
-            updateCharacterCount()
+//    var inputText: String? {
+//        didSet {
+//            updateCharacterCount()
+//        }
+//    }
+
+    var inputText = Observable(value: "")
+
+    init() {
+        inputText.bind { _ in
+            self.updateCharacterCount()
         }
     }
 
-    var outputText: String? {
-        didSet {
-            closureCount?()
-        }
-    }
 
-    var closureCount: (() -> Void)?
+    var outputText = Observable(value: "")
+//
+//    var outputText: String? {
+//        didSet {
+//            closureCount?()
+//        }
+//    }
 
     private func updateCharacterCount() {
-        let count = inputText?.count
-        outputText = "현재까지 \(count ?? 0)글자 작성중"
+        let count = inputText.value.count
+        outputText.value = "현재까지 \(count)글자 작성중"
     }
 
 }
