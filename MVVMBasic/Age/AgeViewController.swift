@@ -39,11 +39,12 @@ final class AgeViewController: UIViewController {
 
         resultButton.addTarget(self, action: #selector(resultButtonTapped), for: .touchUpInside)
 
-        viewModel.closureText = {
-            self.label.text = self.viewModel.outputText
+        viewModel.outputText.lazyBind { text in
+            self.label.text = text
         }
 
-        viewModel.closureError = { error in
+        viewModel.closureError.lazyBind { error in
+            guard let error = error as? BaseValidateError else { return }
             DispatchQueue.main.async {
                 self.showAlert(title: "경고", message: error.rawValue)
             }
@@ -84,6 +85,8 @@ final class AgeViewController: UIViewController {
     @objc private func resultButtonTapped() {
         view.endEditing(true)
 
-        viewModel.inputText = textField.text
+        guard let text = textField.text else { return }
+
+        viewModel.inputText.text = text
     }
 }

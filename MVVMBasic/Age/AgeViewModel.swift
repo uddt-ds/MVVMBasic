@@ -9,46 +9,39 @@ import Foundation
 
 class AgeViewModel {
 
-    var inputText: String? {
-        didSet {
-            print("input 값이 변경되었습니다")
+    var inputText = AgeObservable(text: "")
+    var outputText = AgeObservable(text: "")
+
+    var closureError = ErrorObservable(error: BaseValidateError.invalidInput)
+    init() {
+        print("AgeViewModel Init")
+        inputText.bind { _ in
             do {
-              try  checkValidate()
-            } catch .invalidInput {
-                closureError?(BaseValidateError.invalidInput)
+                try self.checkValidate()
             } catch {
-                print("unknown Error")
+                self.closureError.error = error
             }
         }
     }
 
-    var outputText: String? {
-        didSet {
-            print("output 값이 변경되었습니다")
-            closureText?()
-        }
-    }
-
-    var closureText: (() -> Void)?
-
-    var closureError: ((BaseValidateError) -> Void)?
-
 
     //VC에서 값 전달한 다음에 VC에서 VM의 메서드를 사용할 수 있지 않을까
+    // 에러 핸들링을 어디서 할건지
     func checkValidate() throws(BaseValidateError) {
-        guard let text = inputText else { return }
+        print("실행")
+        let text = inputText.text
         do {
             let result = try checkValidateInput(input: text)
-            outputText = "당신은 \(result)살입니다"
+            outputText.text = "당신은 \(result)살입니다"
         } catch .failConversionToValue {
             print("fail 캐치")
-            outputText =  BaseValidateError.failConversionToValue.rawValue
+            throw .failConversionToValue
         } catch .invalidInput {
             print("invalid 캐치")
-            throw BaseValidateError.invalidInput
+            throw .invalidInput
         } catch {
             print("outOfRange 캐치")
-            outputText = BaseValidateError.outOfRangeValue.rawValue
+            throw .outOfRangeValue
         }
     }
 
