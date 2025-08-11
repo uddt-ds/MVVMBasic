@@ -9,44 +9,24 @@ import Foundation
 
 class BirthDayViewModel {
 
-    var inputYear: String? {
-        didSet {
-            print("---inputYear---")
-            print("oldValue: ", oldValue)
-            checkValidate()
+    var inputYear = Observable(value: "")
+    var inputMonth = Observable(value: "")
+    var inputDay = Observable(value: "")
+
+    var buttonTapped = Observable(value: ())
+
+    var outputText = Observable(value: "")
+
+    init() {
+        buttonTapped.bind { _ in
+            self.checkValidate()
         }
     }
-
-    var inputMonth: String? {
-        didSet {
-            print("---inputMonth---")
-            print("oldValue: ", oldValue)
-            checkValidate()
-        }
-    }
-
-    var inputDay: String? {
-        didSet {
-            print("---inputDay---")
-            print("oldValue: ", oldValue)
-            checkValidate()
-        }
-    }
-
-    var outputText: String? {
-        didSet {
-            print("전달할 값 변경")
-            print("oldValue: ", oldValue)
-            closureText?()
-        }
-    }
-
-    var closureText: (() -> Void)?
 
     private func checkValidate() {
-        let year = inputYear
-        let month = inputMonth
-        let day = inputDay
+        let year = inputYear.value
+        let month = inputMonth.value
+        let day = inputDay.value
 
         do {
             let input = try inputChecker(year: year, month: month, day: day)
@@ -64,28 +44,27 @@ class BirthDayViewModel {
 
             let count = Calendar.current.dateComponents([.day], from: date, to: .now)
 
-            outputText = "태어난 날짜로부터 D+\(count.day ?? 0)일 입니다"
+            outputText.value = "태어난 날짜로부터 D+\(count.day ?? 0)일 입니다"
 
         } catch BaseValidateError.invalidInput {
-            outputText = BaseValidateError.invalidInput.rawValue
+            outputText.value = BaseValidateError.invalidInput.rawValue
         } catch BaseValidateError.outOfRangeValue {
-           outputText = BaseValidateError.outOfRangeValue.rawValue
+            outputText.value = BaseValidateError.outOfRangeValue.rawValue
         } catch {
             print("Unknown Error")
         }
     }
 
     // 입력 자체가 유효한지 확인
-    private func inputChecker<T: StringProtocol>(year: T?, month: T?, day: T?) throws -> (Int, Int, Int) {
-        guard let y = year?.trimmingCharacters(in: .whitespaces),
-              let m = month?.trimmingCharacters(in: .whitespaces),
-              let d = day?.trimmingCharacters(in: .whitespaces),
-              let intYear = Int(y),
-              let intMonth = Int(m),
+    private func inputChecker<T: StringProtocol>(year: T, month: T, day: T) throws -> (Int, Int, Int) {
+        let y = year.trimmingCharacters(in: .whitespaces)
+        let m = month.trimmingCharacters(in: .whitespaces)
+        let d = day.trimmingCharacters(in: .whitespaces)
+        guard let intYear = Int(y),
+        let intMonth = Int(m),
               let intDay = Int(d) else {
             throw BaseValidateError.invalidInput
         }
-
         return (intYear, intMonth, intDay)
     }
 

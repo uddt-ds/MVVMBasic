@@ -66,8 +66,8 @@ class BirthDayViewController: UIViewController {
 
         resultButton.addTarget(self, action: #selector(resultButtonTapped), for: .touchUpInside)
 
-        viewModel.closureText = {
-            self.resultLabel.text = self.viewModel.outputText
+        viewModel.outputText.bind { text in
+            self.resultLabel.text = text
         }
     }
 
@@ -138,9 +138,15 @@ class BirthDayViewController: UIViewController {
     @objc func resultButtonTapped() {
         view.endEditing(true)
 
-        viewModel.inputYear = yearTextField.text
-        viewModel.inputMonth = monthTextField.text
-        viewModel.inputDay = dayTextField.text
+        guard let year = yearTextField.text,
+              let month = monthTextField.text,
+              let day = dayTextField.text else { return }
+
+        viewModel.inputYear.value = year
+        viewModel.inputMonth.value = month
+        viewModel.inputDay.value = day
+
+        viewModel.buttonTapped.value = ()
     }
 }
     // TODO: 윤달 검사 추가 필요
