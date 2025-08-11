@@ -18,7 +18,7 @@ class BirthDayViewModel {
     var outputText = Observable(value: "")
 
     init() {
-        buttonTapped.bind { _ in
+        buttonTapped.skipBind { _ in
             self.checkValidate()
         }
     }

@@ -26,4 +26,8 @@ class Observable<T> {
         closure(value)
         self.action = closure
     }
+
+    func skipBind(closure: @escaping (T) -> Void) {
+        self.action = closure
+    }
 }

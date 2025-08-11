@@ -14,13 +14,12 @@ class BMIViewModel {
     var inputWeight = Observable(value: "")
 
     init() {
-        buttonTapped.bind { _ in
+        buttonTapped.skipBind { _ in
             self.validate()
         }
     }
 
     var buttonTapped = Observable(value: ())
-
 
     var outputText = Observable(value: "")
 
@@ -60,7 +59,7 @@ class BMIViewModel {
         } catch BaseValidateError.outOfRangeValue {
             outputText.value = BaseValidateError.outOfRangeValue.rawValue
         } catch BMIError.weightWrongInput {
-            outputText.value = BMIError.weightWrongInput.rawValue
+            outputText.value = ""
             bmiError.value = BMIError.weightWrongInput
         } catch {
             print("Unknown Error")

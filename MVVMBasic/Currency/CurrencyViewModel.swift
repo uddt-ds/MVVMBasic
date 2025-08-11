@@ -12,7 +12,7 @@ class CurrencyViewModel {
     var inputText = Observable(value: "")
 
     init() {
-        inputText.bind { _ in
+        inputText.skipBind { _ in
             self.validate()
         }
     }
