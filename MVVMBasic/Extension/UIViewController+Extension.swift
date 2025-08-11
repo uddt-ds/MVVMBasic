@@ -29,7 +29,8 @@ extension UIViewController {
         case .essential:
             let tabBarController = UITabBarController()
             let mapVC = MapViewController()
-            mapVC.tabBarItem = UITabBarItem(title: "맵", image: UIImage(systemName: "map"), tag: 0)
+            let navMap = UINavigationController(rootViewController: mapVC)
+            navMap.tabBarItem = UITabBarItem(title: "맵", image: UIImage(systemName: "map"), tag: 0)
             let ageVC = AgeViewController()
             ageVC.tabBarItem = UITabBarItem(title: "나이", image: UIImage(systemName: "person.fill"), tag: 1)
             let bmiVC = BMIViewController()
@@ -41,7 +42,7 @@ extension UIViewController {
             let wordCounterVC = WordCounterViewController()
             wordCounterVC.tabBarItem = UITabBarItem(title: "글자수", image: UIImage(systemName: "envelope.front"), tag: 5)
 
-            tabBarController.viewControllers = [mapVC, ageVC, bmiVC, birthDayVC, currencyVC, wordCounterVC]
+            tabBarController.viewControllers = [navMap, ageVC, bmiVC, birthDayVC, currencyVC, wordCounterVC]
             tabBarController.tabBar.tintColor = .systemBlue
             tabBarController.tabBar.unselectedItemTintColor = .systemGray
 

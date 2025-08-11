@@ -18,7 +18,7 @@ enum Category: String {
 
 class MapViewController: UIViewController {
 
-    let totalData = RestaurantList.restaurantArray
+    let viewModel = MapViewModel()
 
     private lazy var seg: UISegmentedControl = {
         let seg = UISegmentedControl()
@@ -42,7 +42,16 @@ class MapViewController: UIViewController {
         setupUI()
         setupMapView()
         addSeoulStationAnnotation()
-        makeTotalAnnotation()
+
+        viewModel.outputData.bind { datas in
+            for data in datas {
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = CLLocationCoordinate2D(latitude: data.latitude, longitude: data.longitude)
+                annotation.title = data.name
+                annotation.subtitle = data.address
+                self.mapView.addAnnotation(annotation)
+            }
+        }
     }
 
     private func setupUI() {
@@ -90,26 +99,6 @@ class MapViewController: UIViewController {
         mapView.addAnnotation(annotation)
     }
 
-    private func makeTotalAnnotation() {
-        for data in totalData {
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocationCoordinate2D(latitude: data.latitude, longitude: data.longitude)
-            annotation.title = data.name
-            annotation.subtitle = data.address
-            mapView.addAnnotation(annotation)
-        }
-    }
-
-    private func makeCategoryAnnotation(_ categoryData: [Restaurant]) {
-        for data in categoryData {
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = CLLocationCoordinate2D(latitude: data.latitude, longitude: data.longitude)
-            annotation.title = data.name
-            annotation.subtitle = data.address
-            mapView.addAnnotation(annotation)
-        }
-    }
-
     @objc private func rightBarButtonTapped() {
         let alertController = UIAlertController(
             title: "메뉴 선택",
@@ -141,31 +130,20 @@ class MapViewController: UIViewController {
         present(alertController, animated: true, completion: nil)
     }
 
-    private func filteredData(_ category: Category) -> [Restaurant] {
-        return totalData.filter { $0.category == category.rawValue }
-    }
-
     @objc private func segValueChanged(_ sender: UISegmentedControl) {
+        mapView.removeAnnotations(mapView.annotations)
         switch sender.selectedSegmentIndex {
         case 0:
-            mapView.removeAnnotations(mapView.annotations)
-            makeTotalAnnotation()
+            viewModel.segmentTapped.value = .total
         case 1:
-            mapView.removeAnnotations(mapView.annotations)
-            let data = filteredData(.korean)
-            makeCategoryAnnotation(data)
+            viewModel.segmentTapped.value = .korean
         case 2:
-            mapView.removeAnnotations(mapView.annotations)
-            let data = filteredData(.overseas)
-            makeCategoryAnnotation(data)
+            viewModel.segmentTapped.value = .overseas
         case 3:
-            mapView.removeAnnotations(mapView.annotations)
-            let data = filteredData(.chinese)
-            makeCategoryAnnotation(data)
+            viewModel.segmentTapped.value = .chinese
         default:
             return
         }
-
     }
 }
  
