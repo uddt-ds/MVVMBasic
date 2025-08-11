@@ -44,14 +44,13 @@ class BMIViewController: UIViewController {
 
         resultButton.addTarget(self, action: #selector(resultButtonTapped), for: .touchUpInside)
 
-        viewModel.closureText = {
-            self.resultLabel.text = self.viewModel.outputText
+        viewModel.outputText.bind { text in
+            self.resultLabel.text = text
         }
 
-        viewModel.closureBMIError = { error in
-            DispatchQueue.main.async {
-                self.showAlert(title: "경고", message: error.rawValue)
-            }
+        viewModel.bmiError.bind { error in
+            guard let error else { return }
+            self.showAlert(title: "경고", message: error.rawValue)
         }
     }
 
@@ -95,9 +94,15 @@ class BMIViewController: UIViewController {
     @objc func resultButtonTapped() {
         view.endEditing(true)
 
-        viewModel.inputHeight = heightTextField.text
-        viewModel.inputWeight = weightTextField.text
+        viewModel.bmiError.value = nil
 
-        viewModel.buttonTapped = true
+        guard let heightText = heightTextField.text,
+              let weightText = weightTextField.text else { return }
+
+        viewModel.inputHeight.value = heightText
+        viewModel.inputWeight.value = weightText
+
+
+        viewModel.buttonTapped.value = ()
     }
 }

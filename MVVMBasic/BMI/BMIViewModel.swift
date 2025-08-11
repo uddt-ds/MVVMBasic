@@ -9,81 +9,62 @@ import Foundation
 
 class BMIViewModel {
 
-    var inputHeight: String? {
-        didSet {
-            print("---inputHeight---")
-            print("텍스트 변경됨")
+    var inputHeight = Observable(value: "")
+
+    var inputWeight = Observable(value: "")
+
+    init() {
+        buttonTapped.bind { _ in
+            self.validate()
         }
     }
 
-    var inputWeight: String? {
-        didSet {
-            print("---inputWeight---")
-            print("텍스트 변경됨")
-        }
-    }
+    var buttonTapped = Observable(value: ())
 
-    var buttonTapped: Bool? {
-        didSet {
-            do {
-                self.buttonTapped = false
-                try validate()
-            } catch {
-                closureBMIError?(BMIError.weightWrongInput)
-            }
-        }
-    }
 
-    var outputText: String? {
-        didSet {
-            print("---outputText---")
-            print("전달될 텍스트 변경됨")
-            closureText?()
-        }
-    }
+    var outputText = Observable(value: "")
 
-    var closureText: (() -> Void)?
+    var bmiError: Observable<BMIError?> = Observable(value: nil)
 
-    var closureBMIError: ((BMIError) -> Void)?
-
-    func validate() throws {
-        let height = inputHeight
-        let weight = inputWeight
+    func validate() {
+        let height = inputHeight.value
+        let weight = inputWeight.value
 
         do {
             try inputChecker(height: height, weight: weight)
         } catch {
-            outputText = BaseValidateError.invalidInput.rawValue
+            outputText.value = BaseValidateError.invalidInput.rawValue
             return
         }
 
-        if let heightText = height, let weightText = weight {
-            do {
-                let result: Double = try validate(height: heightText, weight: weightText)
-                let resultString = String(format: "%.2f", result)
-                var condition = ""
+        let heightText = height
+        let weightText = weight
+        do {
+            let result: Double = try validateCheck(height: heightText, weight: weightText)
+            let resultString = String(format: "%.2f", result)
+            var condition = ""
 
-                switch result {
-                case 0.0..<18.5: condition = "저체중"
-                case 18.5..<23.0: condition = "정상체중"
-                case 23.0..<25.0: condition = "과체중"
-                case 25.0...: condition = "비만"
-                default: return
-                }
-
-                outputText = "BMI 지수는 \(resultString), \(condition)입니다"
-            } catch BaseValidateError.failConversionToValue {
-                outputText = BaseValidateError.failConversionToValue.rawValue
-            } catch BaseValidateError.invalidInput {
-                outputText = BaseValidateError.invalidInput.rawValue
-            } catch BaseValidateError.outOfRangeValue {
-                outputText = BaseValidateError.outOfRangeValue.rawValue
-            } catch BMIError.weightWrongInput {
-                throw BMIError.weightWrongInput
-            } catch {
-                print("Unknown Error")
-                return
+            switch result {
+            case 0.0..<18.5: condition = "저체중"
+            case 18.5..<23.0: condition = "정상체중"
+            case 23.0..<25.0: condition = "과체중"
+            case 25.0...: condition = "비만"
+            default: return
             }
+
+            outputText.value = "BMI 지수는 \(resultString), \(condition)입니다"
+        } catch BaseValidateError.failConversionToValue {
+            outputText.value = BaseValidateError.failConversionToValue.rawValue
+        } catch BaseValidateError.invalidInput {
+            outputText.value = BaseValidateError.invalidInput.rawValue
+        } catch BaseValidateError.outOfRangeValue {
+            outputText.value = BaseValidateError.outOfRangeValue.rawValue
+        } catch BMIError.weightWrongInput {
+            outputText.value = BMIError.weightWrongInput.rawValue
+            bmiError.value = BMIError.weightWrongInput
+        } catch {
+            print("Unknown Error")
+            return
         }
     }
 
@@ -96,7 +77,7 @@ class BMIViewModel {
     }
 
     // Double로 변환이 가능한지(결국 내부에서는 Double로 강제되었음)
-    private func validate<T: BinaryFloatingPoint>(height: String, weight: String) throws -> T {
+    private func validateCheck<T: BinaryFloatingPoint>(height: String, weight: String) throws -> T {
         var isInRange: Bool = false
 
         if let heightInput = Double(height), let weightInput = Double(weight) {
@@ -129,11 +110,11 @@ class BMIViewModel {
         let maxWeight = Double(RangeData.weight.rangeNum.max)
 
         if Double(height) > maxHeight || Double(height) < minHeight {
-            return false
+            throw .outOfRangeValue
         }
 
         if Double(weight) > maxWeight || Double(weight) < minWeight {
-            return false
+            throw .outOfRangeValue
         }
 
         return true
