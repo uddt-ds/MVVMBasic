@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 
+//TODO: MVVM 구조로 리팩토링
 final class MBTIViewController: UIViewController {
 
     private var selectedIndexDictionary: [Int:Int] = [:]
@@ -39,17 +40,6 @@ final class MBTIViewController: UIViewController {
         return button
     }()
 
-//    let cameraImageView: UIImageView = {
-//        let imageView = UIImageView()
-//        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 16)
-//        imageView.contentMode = .center
-//        imageView.layer.cornerRadius = 18
-//        imageView.image = UIImage(systemName: "camera.fill", withConfiguration: symbolConfiguration)
-//        imageView.backgroundColor = .blue   // 블루 색상 변경 필요
-//        imageView.tintColor = .white
-//        return imageView
-//    }()
-
     private let nicknametextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "닉네임을 입력해주세요 :)"
@@ -57,11 +47,18 @@ final class MBTIViewController: UIViewController {
         textField.textColor = .darkGray
         return textField
     }()
-    
+
     private let underLine: UIView = {
         let lineView = UIView()
         lineView.backgroundColor = .darkGray
         return lineView
+    }()
+
+    private let validateLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 12)
+        label.textColor = .badLabel
+        return label
     }()
 
     private let mbtiLabel: UILabel = {
@@ -86,8 +83,6 @@ final class MBTIViewController: UIViewController {
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: makeMBTICollectionViewLayout())
 
     private let buttonTitleArr = ButtonTitle.e.horizontalArray
-
-//    private var selectedArr: [Int] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -117,7 +112,7 @@ final class MBTIViewController: UIViewController {
     }
 
     private func configureHierarchy() {
-        [imageView, cameraImageButton, nicknametextField, underLine, mbtiLabel, collectionView, completeButon].forEach { view.addSubview($0) }
+        [imageView, cameraImageButton, nicknametextField, underLine, validateLabel, mbtiLabel, collectionView, completeButon].forEach { view.addSubview($0) }
     }
 
     private func configureLayout() {
@@ -146,8 +141,13 @@ final class MBTIViewController: UIViewController {
             make.centerX.equalTo(nicknametextField)
         }
 
+        validateLabel.snp.makeConstraints { make in
+            make.top.equalTo(nicknametextField.snp.bottom).offset(10)
+            make.leading.equalTo(nicknametextField)
+        }
+
         mbtiLabel.snp.makeConstraints { make in
-            make.top.equalTo(nicknametextField.snp.bottom).offset(60)
+            make.top.equalTo(validateLabel.snp.bottom).offset(50)
             make.leading.equalTo(view.safeAreaLayoutGuide).offset(16)
         }
 
@@ -170,6 +170,7 @@ final class MBTIViewController: UIViewController {
     }
 
     private func addButtonTarget() {
+        cameraImageButton.addTarget(self, action: #selector(imageTapped), for: .touchUpInside)
         completeButon.addTarget(self, action: #selector(completeButtonTapped), for: .touchUpInside)
     }
 
@@ -177,13 +178,12 @@ final class MBTIViewController: UIViewController {
         completeButon.backgroundColor = completeButon.isEnabled ? .main : .darkGray
     }
 
-
     private func setupNav() {
         navigationItem.title = "PROFILE SETTING"
     }
 
     private func setupGesture() {
-        let gesture = UITapGestureRecognizer(target: self, action: #selector(imageViewTapped))
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
         imageView.addGestureRecognizer(gesture)
     }
 
@@ -207,9 +207,15 @@ final class MBTIViewController: UIViewController {
         print("당신의 MBTI는 \(mbtiResult.joined())입니다.")
     }
 
-    @objc private func imageViewTapped(_ sender: UITapGestureRecognizer) {
+    @objc private func imageTapped(_ sender: Any) {
         let vc = ProfileViewController()
         navigationController?.pushViewController(vc, animated: true)
+    }
+
+    private func checkNickname(_ text: String) {
+        if text.count < 2 || text.count > 10 {
+            validateLabel.text = ""
+        }
     }
 }
 
