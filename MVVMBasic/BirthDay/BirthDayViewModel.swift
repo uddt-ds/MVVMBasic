@@ -9,24 +9,24 @@ import Foundation
 
 class BirthDayViewModel {
 
-    var inputYear = Observable(value: "")
-    var inputMonth = Observable(value: "")
-    var inputDay = Observable(value: "")
-
-    var buttonTapped = Observable(value: ())
+    var inputBirthday: Observable<(String?, String?, String?)> = Observable(value: ("", "", ""))
 
     var outputText = Observable(value: "")
 
     init() {
-        buttonTapped.skipBind { _ in
-            self.checkValidate()
+        inputBirthday.skipBind { year, month, day in
+            self.checkValidate(year: year, month: month, day: day)
         }
     }
 
-    private func checkValidate() {
-        let year = inputYear.value
-        let month = inputMonth.value
-        let day = inputDay.value
+    private func checkValidate(year: String?, month: String?, day: String?) {
+
+        guard let year,
+              let month,
+              let day else {
+            outputText.value = BaseValidateError.invalidInput.rawValue
+            return
+        }
 
         do {
             let input = try inputChecker(year: year, month: month, day: day)

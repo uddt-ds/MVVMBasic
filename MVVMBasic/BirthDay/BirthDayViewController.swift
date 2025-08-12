@@ -16,6 +16,7 @@ class BirthDayViewController: UIViewController {
         let textField = UITextField()
         textField.placeholder = "년도를 입력해주세요"
         textField.borderStyle = .roundedRect
+        textField.keyboardType = .numberPad
         return textField
     }()
     let yearLabel: UILabel = {
@@ -27,6 +28,7 @@ class BirthDayViewController: UIViewController {
         let textField = UITextField()
         textField.placeholder = "월을 입력해주세요"
         textField.borderStyle = .roundedRect
+        textField.keyboardType = .numberPad
         return textField
     }()
     let monthLabel: UILabel = {
@@ -38,6 +40,7 @@ class BirthDayViewController: UIViewController {
         let textField = UITextField()
         textField.placeholder = "일을 입력해주세요"
         textField.borderStyle = .roundedRect
+        textField.keyboardType = .numberPad
         return textField
     }()
     let dayLabel: UILabel = {
@@ -138,15 +141,7 @@ class BirthDayViewController: UIViewController {
     @objc func resultButtonTapped() {
         view.endEditing(true)
 
-        guard let year = yearTextField.text,
-              let month = monthTextField.text,
-              let day = dayTextField.text else { return }
-
-        viewModel.inputYear.value = year
-        viewModel.inputMonth.value = month
-        viewModel.inputDay.value = day
-
-        viewModel.buttonTapped.value = ()
+        viewModel.inputBirthday.value = (yearTextField.text, monthTextField.text, dayTextField.text)
     }
 }
     // TODO: 윤달 검사 추가 필요
