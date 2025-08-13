@@ -11,9 +11,9 @@ import SnapKit
 //TODO: MVVM 구조로 리팩토링
 final class MBTIViewController: UIViewController {
 
-    private var selectedIndexDictionary: [Int:Int] = [:]
-
     let imageManager = ImageManager.shared
+
+    let viewModel = MBTIViewModel()
 
     private lazy var imageView: UIImageView = {
         let imageView = UIImageView()
@@ -92,6 +92,9 @@ final class MBTIViewController: UIViewController {
         setupNav()
         setupGesture()
         addButtonTarget()
+        bindViewModel()
+
+        nicknametextField.delegate = self
 
         collectionView.dataSource = self
         collectionView.delegate = self
@@ -99,6 +102,29 @@ final class MBTIViewController: UIViewController {
         collectionView.register(MBTICell.self, forCellWithReuseIdentifier: MBTICell.identifier)
     }
 
+    private func bindViewModel() {
+        viewModel.output.validateLabel.bind { message in
+            self.validateLabel.text = message
+        }
+
+        viewModel.output.reloadIndex.bind { indexs in
+            for index in indexs {
+                self.collectionView.reloadItems(at: [IndexPath(row: index, section: 0)])
+            }
+        }
+
+        viewModel.output.checkButtonState.bind { isEnabled in
+            self.completeButon.isEnabled = isEnabled
+
+            self.completeButon.backgroundColor = self.completeButon.isEnabled ? .main : .disable
+        }
+
+        viewModel.output.checkValidate.skipBind { result in
+            result ? print("push") : print("stay")
+        }
+    }
+
+    // TODO: UIScreen으로 가져오는 코드 변경 필요
     private func makeMBTICollectionViewLayout() -> UICollectionViewFlowLayout {
         let deviceWidth = UIScreen.main.bounds.width 
         let cellWidth = (deviceWidth * 0.6 - 36) / 4
@@ -174,10 +200,6 @@ final class MBTIViewController: UIViewController {
         completeButon.addTarget(self, action: #selector(completeButtonTapped), for: .touchUpInside)
     }
 
-    private func updateButton() {
-        completeButon.backgroundColor = completeButon.isEnabled ? .main : .darkGray
-    }
-
     private func setupNav() {
         navigationItem.title = "PROFILE SETTING"
     }
@@ -185,37 +207,22 @@ final class MBTIViewController: UIViewController {
     private func setupGesture() {
         let gesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
         imageView.addGestureRecognizer(gesture)
+
+        let viewGesture = UITapGestureRecognizer(target: self, action: #selector(viewTapped))
+        view.addGestureRecognizer(viewGesture)
     }
 
-    private func checkButtonState() {
-        if selectedIndexDictionary.count == 4 {
-            completeButon.isEnabled = true
-        } else {
-            completeButon.isEnabled = false
-        }
-        updateButton()
+    @objc private func viewTapped(_ sender: UIView) {
+        view.endEditing(true)
     }
 
     @objc private func completeButtonTapped(_ sender: UIButton) {
-        let keys = selectedIndexDictionary.keys.sorted()
-        var mbtiResult: [String] = []
-        for key in keys {
-            if let value = selectedIndexDictionary[key] {
-                mbtiResult.append(buttonTitleArr[value].rawValue)
-            }
-        }
-        print("당신의 MBTI는 \(mbtiResult.joined())입니다.")
+        viewModel.input.resultButtonTapped.value = ()
     }
 
     @objc private func imageTapped(_ sender: Any) {
         let vc = ProfileViewController()
         navigationController?.pushViewController(vc, animated: true)
-    }
-
-    private func checkNickname(_ text: String) {
-        if text.count < 2 || text.count > 10 {
-            validateLabel.text = ""
-        }
     }
 }
 
@@ -229,34 +236,29 @@ extension MBTIViewController: UICollectionViewDataSource, UICollectionViewDelega
         cell.configureButton(title: buttonTitleArr[indexPath.item].rawValue, tag: indexPath.item)
 
         cell.buttonTapClosure = { btn in
-            let tappedIndex = btn.tag
-            let groupKey = self.buttonTitleArr[tappedIndex].groupKey
-            let selectedIndex = self.selectedIndexDictionary[groupKey]
-            if selectedIndex == nil {
-                self.selectedIndexDictionary[groupKey] = tappedIndex
-                self.collectionView.reloadItems(at: [IndexPath(item: tappedIndex, section: 0)])
-            } else if selectedIndex == tappedIndex {
-                self.selectedIndexDictionary[groupKey] = nil
-                self.collectionView.reloadItems(at: [IndexPath(item: tappedIndex, section: 0)])
-            } else {
-                if let selectedIndex {
-                    let reloadIndexes = [
-                        IndexPath(item: selectedIndex, section: 0),
-                        IndexPath(item: tappedIndex, section: 0)
-                    ]
-                    self.selectedIndexDictionary[groupKey] = tappedIndex
-                    self.collectionView.reloadItems(at: reloadIndexes)
-                }
-            }
+            self.viewModel.input.selectedMBTI.value = btn.tag
         }
 
-        let groupKey = self.buttonTitleArr[indexPath.item].groupKey
-        cell.changeButtonColor(isSelected: selectedIndexDictionary[groupKey] == indexPath.item)
-
-        checkButtonState()
+        cell.changeButtonColor(isSelected: viewModel.buttonSelected(indexPath.item))
 
         return cell
     }
+}
+
+extension MBTIViewController: UITextFieldDelegate {
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        viewModel.input.textFieldValue.value = textField.text
+    }
+
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        view.endEditing(true)
+    }
+
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        viewModel.input.textResult.value = textField.text
+        view.endEditing(true)
+    }
+
 }
 
 enum ButtonTitle: String, CaseIterable {
