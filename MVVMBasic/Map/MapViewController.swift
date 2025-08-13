@@ -9,23 +9,36 @@ import UIKit
 import MapKit
 import SnapKit
 
-enum Category: String {
-    case total = "전체"
-    case korean = "한식"
-    case overseas = "양식"
-    case chinese = "중식"
+enum Category: Int, CaseIterable {
+    case total
+    case korean
+    case overseas
+    case chinese
+
+    var title: String {
+        switch self {
+        case .total: return "전체"
+        case .korean: return "한식"
+        case .overseas: return "양식"
+        case .chinese: return "중식"
+        }
+    }
 }
 
 class MapViewController: UIViewController {
 
     let viewModel = MapViewModel()
 
+    let categoryArr = Category.allCases
+
     private lazy var seg: UISegmentedControl = {
+
         let seg = UISegmentedControl()
-        seg.insertSegment(withTitle: Category.total.rawValue, at: 0, animated: true)
-        seg.insertSegment(withTitle: Category.korean.rawValue, at: 1, animated: true)
-        seg.insertSegment(withTitle: Category.overseas.rawValue, at: 2, animated: true)
-        seg.insertSegment(withTitle: Category.chinese.rawValue, at: 3, animated: true)
+
+        for num in 0..<4 {
+            seg.insertSegment(withTitle: categoryArr[num].title, at: categoryArr[num].rawValue, animated: true)
+        }
+
         seg.selectedSegmentIndex = 0
         seg.backgroundColor = .black
 
@@ -63,7 +76,7 @@ class MapViewController: UIViewController {
             target: self,
             action: #selector(rightBarButtonTapped)
         )
-         
+
         [mapView, seg].forEach { view.addSubview($0) }
 
         mapView.snp.makeConstraints { make in
@@ -81,21 +94,14 @@ class MapViewController: UIViewController {
         mapView.mapType = .standard
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .none
-         
-        let seoulStationCoordinate = CLLocationCoordinate2D(latitude: 37.5176, longitude: 126.8863)
-        let region = MKCoordinateRegion(
-            center: seoulStationCoordinate,
-            latitudinalMeters: 2000,
-            longitudinalMeters: 2000
-        )
+
+        let region = viewModel.mapManager.setupMapView(location: .company)
+
         mapView.setRegion(region, animated: true)
     }
     
     private func addSeoulStationAnnotation() {
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = CLLocationCoordinate2D(latitude: 37.5547, longitude: 126.9706)
-        annotation.title = "서울역"
-        annotation.subtitle = "대한민국 서울특별시"
+        let annotation = viewModel.mapManager.addAnnotation(lat: 37.5547, lon: 126.9706, title: "서울역", subTitle: "대한민국 서울특별시")
         mapView.addAnnotation(annotation)
     }
 
@@ -108,34 +114,17 @@ class MapViewController: UIViewController {
 
         let map = self.mapView
 
-        let alert1Action = UIAlertAction(title: Category.total.rawValue, style: .default) { _ in
-            map.removeAnnotations(map.annotations)
-            self.viewModel.alertTapped.value = Category.total
-        }
-        
-        let alert2Action = UIAlertAction(title: Category.korean.rawValue, style: .default) { _ in
-            map.removeAnnotations(map.annotations)
-            self.viewModel.alertTapped.value = Category.korean
-        }
-        
-        let alert3Action = UIAlertAction(title: Category.overseas.rawValue, style: .default) { _ in
-            map.removeAnnotations(map.annotations)
-            self.viewModel.alertTapped.value = Category.overseas
-        }
-
-        let alert4Action = UIAlertAction(title: Category.chinese.rawValue, style: .default) { _ in
-            map.removeAnnotations(map.annotations)
-            self.viewModel.alertTapped.value = Category.chinese
+        for num in 0..<4 {
+            let alertAction = UIAlertAction(title: categoryArr[num].title, style: .default) { _ in
+                map.removeAnnotations(map.annotations)
+                self.viewModel.alertTapped.value = self.categoryArr[num]
+            }
+            alertController.addAction(alertAction)
         }
 
         let cancelAction = UIAlertAction(title: "취소", style: .cancel) { _ in
             print("취소가 선택되었습니다.")
         }
-        
-        alertController.addAction(alert1Action)
-        alertController.addAction(alert2Action)
-        alertController.addAction(alert3Action)
-        alertController.addAction(alert4Action)
         alertController.addAction(cancelAction)
          
         present(alertController, animated: true, completion: nil)
@@ -167,13 +156,8 @@ extension MapViewController: MKMapViewDelegate {
         print("제목: \(annotation.title ?? "제목 없음")")
         print("부제목: \(annotation.subtitle ?? "부제목 없음")")
         print("좌표: \(annotation.coordinate.latitude), \(annotation.coordinate.longitude)")
-        
-        // 선택된 어노테이션으로 지도 중심 이동
-        let region = MKCoordinateRegion(
-            center: annotation.coordinate,
-            latitudinalMeters: 1000,
-            longitudinalMeters: 1000
-        )
+
+        let region = viewModel.mapManager.changeCameraPosition(annotation: annotation)
         mapView.setRegion(region, animated: true)
     }
     

@@ -9,6 +9,8 @@ import Foundation
 
 class MapViewModel {
 
+    let mapManager = MapManager.shared
+
     var segmentTapped = Observable(value: Category.total)
 
     var alertTapped = Observable(value: Category.total)
@@ -30,7 +32,7 @@ class MapViewModel {
     func getFilteredData(_ category: Category) -> [Restaurant] {
         switch category {
         case .total: return totalData
-        case .korean, .overseas, .chinese:  return totalData.filter { $0.category == category.rawValue }
+        case .korean, .overseas, .chinese:  return totalData.filter { $0.category == category.title }
         }
     }
 }
